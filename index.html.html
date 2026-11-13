@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171321">
+<title>SIN FILTROS · Juego para 4</title>
+<style>
+:root{--bg:#12101a;--panel:#211c2d;--panel2:#2c243a;--pink:#ff5da2;--violet:#a78bfa;--gold:#ffd166;--text:#fff8ff;--muted:#c7bdd2;--line:#493d59}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#30203b 0,#12101a 55%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh;padding:18px 14px 40px}
+main{max-width:720px;margin:auto}.top{text-align:center;padding:18px 8px 12px}.eyebrow{color:var(--gold);letter-spacing:4px;font-size:11px;font-weight:800}.logo{font-size:clamp(38px,10vw,62px);font-weight:1000;line-height:1;margin:10px 0;background:linear-gradient(90deg,var(--pink),var(--violet),var(--gold));color:transparent;background-clip:text}.sub{color:var(--muted);margin:8px auto;max-width:430px}
+.panel{background:#211c2deF;border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 14px 35px #0005}
+h2{margin:0 0 12px;font-size:22px}h3{margin:0 0 8px}p{line-height:1.5}.muted{color:var(--muted)}label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px}input,select{width:100%;background:#15121e;color:white;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.players{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+button{border:0;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:800;color:#1b1421;background:linear-gradient(110deg,var(--pink),#ffc1dd);cursor:pointer}
+button.secondary{background:#3a3049;color:white;border:1px solid #5a4a6e}button.gold{background:linear-gradient(110deg,var(--gold),#ffe6a0)}button:disabled{opacity:.4}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.actions button{flex:1;min-width:125px}
+.hidden{display:none!important}.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:6px 10px;color:var(--muted);font-size:12px;margin:3px}
+.question{font-size:clamp(23px,5vw,32px);font-weight:850;line-height:1.25;margin:20px 0}.category{color:var(--gold);font-weight:900;letter-spacing:2px;font-size:12px}
+.turn{color:var(--pink);font-weight:900}.card{background:linear-gradient(145deg,#fff6e8,#f5d9ef);color:#281d32;border-radius:20px;padding:22px;min-height:210px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 12px 25px #0005}.card .suit{font-size:38px}.card .cardtext{font-size:22px;font-weight:850;line-height:1.25}.card .rank{font-size:13px;font-weight:900;letter-spacing:2px}
+.special{background:linear-gradient(145deg,#ffe6a0,#ffb3d0)}.stat{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:8px 0;color:var(--muted)}.hand{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.hand button{font-size:12px;padding:9px;background:#3a3049;color:white;border:1px solid #665278}.notice{background:#30263d;border-left:4px solid var(--gold);padding:12px;border-radius:10px;color:#f6eafa;font-size:14px}
+footer{text-align:center;color:#82788e;font-size:12px;padding:20px}
+@media(max-width:420px){.panel{padding:16px}.grid{grid-template-columns:1fr 1fr}.actions button{min-width:100px}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="eyebrow">CUATRO JUGADORES · CERO VERGÜENZA</div><div class="logo">SIN FILTROS</div><p class="sub">Salseo, confesiones, debates y cartas para que la conversación no se muera.</p></header>
+
+<section id="setup" class="panel">
+<h2>🔥 Preparad la partida</h2><p class="muted">Poned vuestros nombres y elegid cómo queréis jugar.</p>
+<div class="players">
+<div><label>Jugador 1</label><input id="p0" value="Jugador 1"></div><div><label>Jugador 2</label><input id="p1" value="Jugador 2"></div>
+<div><label>Jugador 3</label><input id="p2" value="Jugador 3"></div><div><label>Jugador 4</label><input id="p3" value="Jugador 4"></div>
+</div>
+<label>Modo de juego</label><select id="mode"><option value="both">SIN FILTROS + baraja digital</option><option value="questions">Solo preguntas y conversación</option><option value="cards">Solo La Baraja del Caos</option><option value="physical">Baraja física (la app lleva los turnos)</option></select>
+<div class="notice" style="margin-top:15px">No hay obligación de beber ni de contar algo que no apetezca. Cada persona tiene 2 pases por partida. La gracia es pasarlo bien, no poner a nadie contra la pared.</div>
+<div class="actions"><button onclick="start()">EMPEZAR PARTIDA</button></div>
+</section>
+
+<section id="game" class="hidden">
+<div class="panel">
+<div class="stat"><span>Turno</span><strong class="turn" id="turnName">—</strong></div>
+<div class="stat"><span>Preguntas jugadas</span><strong id="count">0</strong></div>
+<div class="stat"><span>Cartas especiales guardadas</span><strong id="specialCount">0/2</strong></div>
+<div class="stat"><span>Pases disponibles</span><strong id="passes">2</strong></div>
+</div>
+<section id="questionPanel" class="panel">
+<div class="category" id="qcat">SALSEO</div><div class="question" id="question">Preparando la primera pregunta…</div>
+<p class="muted" id="qhint">Responde el jugador del turno. Después, el grupo puede preguntar o comentar.</p>
+<div class="actions"><button onclick="nextQuestion()">SIGUIENTE PREGUNTA</button><button class="secondary" onclick="passQuestion()">PASAR</button></div>
+</section>
+<section id="cardPanel" class="panel hidden">
+<h2>🃏 La Baraja del Caos</h2><p class="muted" id="cardIntro">Cada tres preguntas, robáis una carta.</p>
+<div id="drawnCard" class="card"><div class="rank">MAZO DE LA MESA</div><div class="cardtext">Cuando toque, roba una carta y deja que empiece el caos.</div><div class="suit">🂠</div></div>
+<div class="actions"><button onclick="drawCard()">ROBAR CARTA</button><button class="secondary" onclick="skipCard()">AHORA NO</button></div>
+<div id="specialArea" class="hidden"><p><strong>Cartas especiales guardadas</strong></p><div id="hand" class="hand"></div><p class="muted">Toca una carta guardada para usarla.</p></div>
+</section>
+<section class="panel">
+<h3>🗣️ Votación rápida</h3><p class="muted">¿Quién encaja más con la pregunta o situación? Votad señalando o elegid un nombre.</p>
+<select id="vote"></select><div class="actions"><button class="gold" onclick="vote()">VOTAR</button><button class="secondary" onclick="newRound()">NUEVA RONDA</button></div><p id="voteResult" class="muted"></p>
+</section>
+<div class="actions"><button class="secondary" onclick="endGame()">TERMINAR PARTIDA</button></div>
+</section>
+<footer>Hecho para hablar, reírse y descubrir cosas. SIN FILTROS 💗</footer>
+</main>
+<script>
+const questions=[
+["SALSEO","¿Cuál fue tu primera impresión de cada persona de esta mesa?"],
+["SALSEO","¿Quién de aquí tiene más pinta de tener una doble vida? Defiende tu respuesta."],
+["SALSEO","¿Qué cotilleo te habría encantado presenciar en primera fila?"],
+["SALSEO","¿Has fingido alguna vez que alguien te caía bien? ¿Por qué?"],
+["SALSEO","¿Quién sería el primero en volver con su ex?"],
+["SALSEO","¿Qué cosa sabes de alguien de esta mesa que nunca dirías delante de más gente?"],
+["SALSEO","¿Cuál ha sido tu mayor momento de tierra, trágame?"],
+["SALSEO","¿Qué red flag has ignorado por completo?"],
+["PROFUNDO","¿Qué necesitas cuando estás teniendo un día horrible?"],
+["PROFUNDO","¿Qué parte de ti crees que la gente entiende menos?"],
+["PROFUNDO","¿Qué te cuesta pedir aunque lo necesites?"],
+["PROFUNDO","¿Qué recuerdo te gustaría poder repetir una vez?"],
+["PROFUNDO","¿Qué has aprendido de una amistad que terminó?"],
+["PROFUNDO","¿Qué te hace sentir de verdad querido/a?"],
+["PROFUNDO","¿Qué miedo te gustaría dejar de alimentar?"],
+["PROFUNDO","¿Qué versión de ti echas de menos?"],
+["ATREVIDO","¿Con quién de aquí te irías de viaje sin pensarlo?"],
+["ATREVIDO","¿Qué es lo más impulsivo que has hecho por alguien?"],
+["ATREVIDO","¿Qué mensaje has escrito y nunca te has atrevido a enviar?"],
+["ATREVIDO","¿Qué secreto pequeño te hace gracia admitir?"],
+["ATREVIDO","¿Qué situación te haría levantarte e irte de una cita?"],
+["PAREJA Y VÍNCULOS","¿Qué gesto pequeño te conquista más que un regalo caro?"],
+["PAREJA Y VÍNCULOS","¿Qué límite no volverías a negociar?"],
+["PAREJA Y VÍNCULOS","¿Qué significa para ti tener confianza?"],
+["PAREJA Y VÍNCULOS","¿Qué discusión absurda recuerdas con cariño?"],
+["SITUACIONES","Si mañana os toca vivir juntos un mes, ¿quién desespera primero al grupo?"],
+["SITUACIONES","Si os detienen en una película, ¿quién sería y por qué?"],
+["SITUACIONES","¿A quién llamarías para que te sacara de un lío a las 4 de la mañana?"],
+["SITUACIONES","Si el grupo tuviera un reality, ¿cómo se llamaría?"],
+["MEZCLA EXPLOSIVA","¿Quién da mejores consejos pero luego no se los aplica?"],
+["MEZCLA EXPLOSIVA","¿Quién sobreviviría mejor a un apocalipsis?"],
+["MEZCLA EXPLOSIVA","¿Qué opinión tuya suele generar debate?"],
+["MEZCLA EXPLOSIVA","Di algo que admires de la persona de tu derecha."],
+["MEZCLA EXPLOSIVA","¿Qué pregunta esperas que no salga esta noche?"]
+];
+const suits=[
+{n:"OROS",s:"🪙",c:[
+["As","Confiesa algo que nunca hayas contado en este grupo."],["2","Cuenta una mentira pequeña que hayas dicho para salir del paso."],["3","Relata una anécdota vergonzosa que ahora te dé risa."],["4","Di tu primera impresión de cada jugador."],["5","Di una opinión que normalmente te callas."],["6","Cuenta algo que repetirías aunque te juzgaran."],["7","Revela una manía tuya que casi nadie conoce."],["Sota","Elige a alguien: tiene que contar una anécdota inédita."],["Caballo","Los demás dicen qué creen que oculta tu personalidad. Confirma o desmiente."],["Rey","Cuenta algo real que te gustaría que los demás entendieran de ti."]]},
+{n:"COPAS",s:"🍷",c:[
+["As","¿Cuándo fue la última vez que alguien te hizo sentir importante?"],["2","¿Qué necesitas cuando estás mal?"],["3","Cuenta un recuerdo de infancia que te siga acompañando."],["4","¿Qué te cuesta más: confiar, perdonar u olvidar? Explica."],["5","¿Qué gesto te enamora o te gana de verdad?"],["6","Habla de una relación o amistad que te haya cambiado."],["7","Comparte un miedo emocional, solo si te apetece."],["Sota","Dile algo bonito y concreto a alguien de la mesa."],["Caballo","Cada uno dice qué admira de quien tiene enfrente."],["Rey","Cuenta algo que te gustaría mejorar en tus relaciones."]]},
+{n:"ESPADAS",s:"⚔️",c:[
+["As","Defiende una opinión impopular durante 30 segundos."],["2","Debatid un minuto dos posturas opuestas sobre un tema elegido."],["3","Votad quién es más difícil de convencer y que se defienda."],["4","Cuenta una situación en la que te costó reconocer un error."],["5","Dos personas deben encontrar tres cosas en las que no estén de acuerdo."],["6","¿Qué norma social cambiarías mañana mismo?"],["7","El grupo resuelve un dilema: decidid entre dos opciones complicadas."],["Sota","Empieza una historia compartida; la persona siguiente añade un detalle."],["Caballo","Debate relámpago: dos personas, 30 segundos cada una."],["Rey","El grupo juzga una situación ficticia y explica su veredicto."]]},
+{n:"BASTOS",s:"🔥",c:[
+["As","Cambia el orden de los turnos durante las dos próximas preguntas."],["2","Elige quién empieza la siguiente ronda."],["3","Todos votan quién tiene más historias. Esa persona cuenta una."],["4","Intercambia tu turno con otra persona."],["5","Forma dos parejas: cada pareja debe acordar una respuesta."],["6","Dos personas responden la misma pregunta sin escuchar la respuesta de la otra."],["7","Escribe una pregunta anónima, mézclala y roba una."],["Sota","Roba una carta extra y elige cuál de las dos se juega."],["Caballo","Cada jugador hace una pregunta a otra persona; no se puede repetir destinatario."],["Rey","Todos responden a la vez una pregunta elegida por quien robó."]]}
+];
+const specials=[["JOKER","🃏","Cambia cualquier carta por otra, sin justificar."],["SEGUNDA OPORTUNIDAD","🔁","Repite tu respuesta y explica qué querías decir realmente."],["EL ESPEJO","🪞","Elige a alguien y dile qué has aprendido de esa persona."],["CAMBIO DE DESTINO","🔀","Intercambia una pregunta pendiente con otra persona."],["LA BOMBA","💣","Todos responden una pregunta elegida por el grupo, sin repetir respuesta."]];
+let names=[],turn=0,count=0,passes=[2,2,2,2],qDeck=[],cardDeck=[],hand=[[],[],[],[]],currentCard=null,mode="both",pending=false,usedQuestions=0;
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function start(){names=[0,1,2,3].map(i=>document.getElementById("p"+i).value.trim()||"Jugador "+(i+1));mode=document.getElementById("mode").value;turn=0;count=0;usedQuestions=0;passes=[2,2,2,2];hand=[[],[],[],[]];qDeck=shuffle(questions);cardDeck=shuffle([...suits.flatMap(x=>x.c.map(c=>({type:"normal",suit:x.n,icon:x.s,rank:c[0],text:c[1]}))),...specials.map(c=>({type:"special",name:c[0],icon:c[1],text:c[2]}))]);document.getElementById("setup").classList.add("hidden");document.getElementById("game").classList.remove("hidden");document.getElementById("cardPanel").classList.toggle("hidden",mode==="questions");document.getElementById("questionPanel").classList.toggle("hidden",mode==="cards"||mode==="physical");let v=document.getElementById("vote");v.innerHTML=names.map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join("");update();if(mode!=="cards"&&mode!=="physical")showQuestion();else document.getElementById("qcat").textContent="";if(mode==="physical")document.getElementById("cardIntro").textContent="Usad vuestra baraja física: robad una carta cada tres preguntas y aplicad el efecto que aparece en pantalla cuando corresponda."}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function update(){document.getElementById("turnName").textContent=names[turn];document.getElementById("count").textContent=count;document.getElementById("specialCount").textContent=hand[turn].length+"/2";document.getElementById("passes").textContent=passes[turn];document.getElementById("hand").innerHTML=hand[turn].map((c,i)=>`<button onclick="useSpecial(${i})">${c.icon} ${c.name}</button>`).join("");document.getElementById("specialArea").classList.toggle("hidden",hand[turn].length===0)}
+function showQuestion(){if(!qDeck.length)qDeck=shuffle(questions);let q=qDeck.pop();document.getElementById("qcat").textContent=q[0];document.getElementById("question").textContent=q[1];document.getElementById("qhint").textContent="Responde "+names[turn]+". Después, el grupo puede comentar o hacer una pregunta más."}
+function nextQuestion(){count++;usedQuestions++;if(mode==="both"&&usedQuestions%3===0){pending=true;document.getElementById("cardIntro").textContent="¡Tres preguntas! Toca robar una carta.";document.getElementById("cardPanel").classList.remove("hidden")}turn=(turn+1)%4;update();if(mode!=="cards"&&mode!=="physical")showQuestion();if(mode==="physical"&&pending){document.getElementById("cardIntro").textContent="¡Toca robar una carta de vuestra baraja física y aplicar su efecto!"} }
+function passQuestion(){if(passes[turn]<=0){alert("Ya has gastado tus dos pases.");return}passes[turn]--;turn=(turn+1)%4;update();showQuestion()}
+function drawCard(){if(!pending&&mode==="both"){alert("La carta se roba cada tres preguntas.");return}if(!cardDeck.length)cardDeck=shuffle([...suits.flatMap(x=>x.c.map(c=>({type:"normal",suit:x.n,icon:x.s,rank:c[0],text:c[1]}))),...specials.map(c=>({type:"special",name:c[0],icon:c[1],text:c[2]}))]);currentCard=cardDeck.pop();pending=false;const el=document.getElementById("drawnCard");el.className="card"+(currentCard.type==="special"?" special":"");el.innerHTML=`<div class="rank">${currentCard.type==="special"?"CARTA ESPECIAL":currentCard.suit+" · "+currentCard.rank}</div><div class="cardtext">${currentCard.text}</div><div class="suit">${currentCard.icon}</div>`;if(currentCard.type==="special"&&hand[turn].length<2){if(confirm("¿Guardar esta carta especial para usarla después? (Máximo 2 guardadas por jugador)")){hand[turn].push(currentCard);update()}}document.getElementById("cardIntro").textContent=currentCard.type==="special"?"Carta especial: puedes guardarla o jugarla ahora.":"Carta normal: se resuelve ahora y se descarta."}
+function skipCard(){pending=false;document.getElementById("cardIntro").textContent="Carta saltada. Seguid con la partida."}
+function useSpecial(i){let c=hand[turn].splice(i,1)[0];update();document.getElementById("drawnCard").className="card special";document.getElementById("drawnCard").innerHTML=`<div class="rank">${c.name}</div><div class="cardtext">${c.text}</div><div class="suit">${c.icon}</div>`;document.getElementById("cardPanel").classList.remove("hidden")}
+function vote(){let who=names[Number(document.getElementById("vote").value)];document.getElementById("voteResult").textContent="La mesa ha señalado a "+who+". ¡Que se explique!"; }
+function newRound(){turn=(turn+1)%4;update();if(mode!=="cards"&&mode!=="physical")showQuestion();document.getElementById("voteResult").textContent=""}
+function endGame(){if(confirm("¿Terminar la partida y volver al inicio?")){document.getElementById("game").classList.add("hidden");document.getElementById("setup").classList.remove("hidden")}}
+</script></body></html>
